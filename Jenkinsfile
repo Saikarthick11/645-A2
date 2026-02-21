@@ -5,12 +5,18 @@ pipeline {
         // Your Docker Hub username
         DOCKERHUB_USER = 'saik11' 
         IMAGE_NAME = 'studentsurvey645'
-    
+        
+        /* IMAGE LOGIC: Using build ID ensures a unique tag for every run.
+           This triggers Kubernetes to pull the new version because the 
+           image name/tag combination changes every time.
+        */
         IMAGE_TAG = "${env.BUILD_ID}"
         
         GIT_REPO_URL = 'https://github.com/Saikarthick11/645-A2.git'
         BRANCH_NAME = 'sai' 
-        DOCKERHUB_PASS = credentials('docker-hub-creds')
+        
+        // Reference to the Credentials ID stored in Jenkins
+        DOCKER_CREDS_ID = 'docker-hub-creds'
     }
 
     stages {
@@ -31,14 +37,14 @@ pipeline {
                 script {
                     echo "Building version: ${IMAGE_TAG}"
                     
-                    // Log in to Docker Hub
-                    sh "docker login -u ${DOCKERHUB_USER} -p ${DOCKERHUB_PASS}"
-                    
                     // Build directly from the source (Dockerfile handles packaging)
                     sh "docker build --platform linux/amd64 -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
                     
-                    // Push to Docker Hub
-                    sh "docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    // Secure Login and Push using Jenkins Docker DSL
+                    // This handles special characters in passwords and avoids shell interpolation issues
+                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDS_ID}") {
+                        sh "docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    }
                 }
             }
         }
