@@ -6,7 +6,7 @@ pipeline {
         DOCKERHUB_USER = 'saik11' 
         IMAGE_NAME = 'studentsurvey645'
         
-   
+        /* IMAGE LOGIC: Using build ID ensures a unique tag for every run. */
         IMAGE_TAG = "${env.BUILD_ID}"
         
         GIT_REPO_URL = 'https://github.com/Saikarthick11/645-A2.git'
@@ -14,7 +14,7 @@ pipeline {
         
         // Reference to the Credentials IDs stored in Jenkins
         DOCKER_CREDS_ID = 'docker-hub-creds'
-        // Create this as a 'Secret file' in Jenkins and put your Rancher Kubeconfig in it
+        // This is the ID of the 'Secret File' credential you created in Jenkins
         KUBECONFIG_ID = 'kubeconfig-id'
     }
 
@@ -52,21 +52,21 @@ pipeline {
                 script {
                     echo "Deploying version ${IMAGE_TAG} to Rancher..."
                     
-                    /* FIXED: We wrap the kubectl commands in withKubeConfig.
-                       This ensures kubectl uses the correct credentials and 
-                       avoids the 'Authentication required' HTML error.
+                    /* FIXED: Using standard withCredentials instead of withKubeConfig.
+                       This injects the Kubeconfig file path into the KUBECONFIG variable,
+                       which kubectl uses automatically for authentication.
                     */
-                    withKubeConfig([credentialsId: "${KUBECONFIG_ID}"]) {
+                    withCredentials([file(credentialsId: "${KUBECONFIG_ID}", variable: 'KUBECONFIG')]) {
                         sh """
                         # Update the manifest with the new image tag
                         sed -i 's|image:.*|image: ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}|g' deployment.yaml
                         
-                        # Apply changes to the cluster
-                        kubectl apply -f deployment.yaml --validate=false
-                        kubectl apply -f service.yaml --validate=false
+                        # Apply changes using the injected KUBECONFIG environment variable
+                        kubectl apply --kubeconfig=\$KUBECONFIG -f deployment.yaml --validate=false
+                        kubectl apply --kubeconfig=\$KUBECONFIG -f service.yaml --validate=false
                         
-                        # Force a rolling update to pull the new image
-                        kubectl rollout restart deployment/studentsurvey-deployment
+                        # Force a rolling update
+                        kubectl rollout restart --kubeconfig=\$KUBECONFIG deployment/studentsurvey-deployment
                         """
                     }
                 }
