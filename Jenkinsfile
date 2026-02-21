@@ -52,21 +52,20 @@ pipeline {
                 script {
                     echo "Deploying version ${IMAGE_TAG} to Rancher..."
                     
-                    /* FIXED: Using standard withCredentials instead of withKubeConfig.
-                       This injects the Kubeconfig file path into the KUBECONFIG variable,
-                       which kubectl uses automatically for authentication.
-                    */
                     withCredentials([file(credentialsId: "${KUBECONFIG_ID}", variable: 'KUBECONFIG')]) {
                         sh """
                         # Update the manifest with the new image tag
                         sed -i 's|image:.*|image: ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}|g' deployment.yaml
                         
-                        # Apply changes using the injected KUBECONFIG environment variable
-                        kubectl apply --kubeconfig=\$KUBECONFIG -f deployment.yaml --validate=false
+                        # FIXED: Using 'replace --force' to resolve the 'Conflict/Object modified' error.
+                        # This replaces the cluster state with your local manifest.
+                        kubectl replace --kubeconfig=\$KUBECONFIG --force -f deployment.yaml
+                        
+                        # Ensure service is up to date
                         kubectl apply --kubeconfig=\$KUBECONFIG -f service.yaml --validate=false
                         
-                        # Force a rolling update
-                        kubectl rollout restart --kubeconfig=\$KUBECONFIG deployment/studentsurvey-deployment
+                        # Verify the rollout
+                        kubectl rollout status --kubeconfig=\$KUBECONFIG deployment/swe-645-a2-cluster
                         """
                     }
                 }
