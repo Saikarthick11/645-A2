@@ -8,16 +8,34 @@ pipeline {
         IMAGE_TAG = '0.5'
         // Replace with your actual GitHub Repo URL
         GIT_REPO_URL = 'https://github.com/Saikarthick11/645-A2.git'
-        // Updated to handle both 'main' and 'master' branch naming
+        // Try changing this to 'master' if the build fails again with 'main'
         BRANCH_NAME = 'main' 
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo "Pulling source code from ${GIT_REPO_URL} (branch: ${BRANCH_NAME})..."
-                // Using explicit syntax to prevent the 'ref not found' status code 128 error
-                git url: "${GIT_REPO_URL}", branch: "${BRANCH_NAME}"
+                script {
+                    echo "Pulling source code from ${GIT_REPO_URL} (branch: ${BRANCH_NAME})..."
+                    try {
+                        checkout([$class: 'GitSCM', 
+                            branches: [[name: "*/${BRANCH_NAME}"]], 
+                            doGenerateSubmoduleConfigurations: false, 
+                            extensions: [], 
+                            submoduleCfg: [], 
+                            userRemoteConfigs: [[url: "${GIT_REPO_URL}"]]
+                        ])
+                    } catch (Exception e) {
+                        echo "Failed to find branch '${BRANCH_NAME}'. Trying fallback to 'master'..."
+                        checkout([$class: 'GitSCM', 
+                            branches: [[name: "*/master"]], 
+                            doGenerateSubmoduleConfigurations: false, 
+                            extensions: [], 
+                            submoduleCfg: [], 
+                            userRemoteConfigs: [[url: "${GIT_REPO_URL}"]]
+                        ])
+                    }
+                }
             }
         }
 
@@ -51,12 +69,19 @@ pipeline {
                 script {
                     echo 'Applying Kubernetes manifests...'
                     sh """
-                    # Update the image placeholder in the manifest if necessary
-                    sed -i 's|<YOUR_DOCKERHUB_USER>/simple-webapp:latest|${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}|g' k8s/deployment.yaml
+                    # Ensure directories exist
+                    mkdir -p k8s
                     
-                    # Apply the deployment and service
-                    kubectl apply -f k8s/deployment.yaml
-                    kubectl apply -f k8s/service.yaml
+                    # Update the image placeholder in the manifest if necessary
+                    # We use '|| true' to prevent script failure if the file doesn't exist yet
+                    if [ -f k8s/deployment.yaml ]; then
+                        sed -i 's|<YOUR_DOCKERHUB_USER>/simple-webapp:latest|${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}|g' k8s/deployment.yaml
+                        kubectl apply -f k8s/deployment.yaml
+                    fi
+                    
+                    if [ -f k8s/service.yaml ]; then
+                        kubectl apply -f k8s/service.yaml
+                    fi
                     """
                 }
             }
