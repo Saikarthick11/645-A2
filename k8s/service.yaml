@@ -1,0 +1,64 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    field.cattle.io/targetWorkloadIds: '["default/swe-645-a2-cluster"]'
+    management.cattle.io/ui-managed: 'true'
+  creationTimestamp: '2026-02-20T21:45:49Z'
+  managedFields:
+    - apiVersion: v1
+      fieldsType: FieldsV1
+      fieldsV1:
+        f:metadata:
+          f:annotations:
+            .: {}
+            f:field.cattle.io/targetWorkloadIds: {}
+            f:management.cattle.io/ui-managed: {}
+          f:ownerReferences:
+            .: {}
+            k:{"uid":"35c93d37-57c6-412f-b218-0a6296aaa6fb"}: {}
+        f:spec:
+          f:internalTrafficPolicy: {}
+          f:ports:
+            .: {}
+            k:{"port":8080,"protocol":"TCP"}:
+              .: {}
+              f:name: {}
+              f:port: {}
+              f:protocol: {}
+              f:targetPort: {}
+          f:selector: {}
+          f:sessionAffinity: {}
+          f:type: {}
+      manager: agent
+      operation: Update
+      time: '2026-02-20T21:45:49Z'
+  name: swe-645-a2-cluster
+  namespace: default
+  ownerReferences:
+    - apiVersion: apps/v1
+      controller: true
+      kind: Deployment
+      name: swe-645-a2-cluster
+      uid: 35c93d37-57c6-412f-b218-0a6296aaa6fb
+  resourceVersion: '95399'
+  uid: 7f21d175-608e-4ad4-a283-a42a4e7b1ebc
+spec:
+  clusterIP: 10.43.146.52
+  clusterIPs:
+    - 10.43.146.52
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: nodeport
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    workload.user.cattle.io/workloadselector: apps.deployment-default-swe-645-a2-cluster
+  sessionAffinity: None
+  type: ClusterIP
+status:
+  loadBalancer: {}
