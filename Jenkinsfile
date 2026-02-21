@@ -9,7 +9,7 @@ pipeline {
         // Replace with your actual GitHub Repo URL
         GIT_REPO_URL = 'https://github.com/Saikarthick11/645-A2.git'
         // Try changing this to 'master' if the build fails again with 'main'
-        BRANCH_NAME = 'main' 
+        BRANCH_NAME = 'sai' 
     }
 
     stages {
