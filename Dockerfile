@@ -4,10 +4,10 @@ FROM tomcat:9.0-jdk15
 WORKDIR /tmp/build
 
 
-COPY *.html ./645-A2
-COPY *.css ./645-A2
-COPY *.JPG ./645-A2
-COPY *.pdf ./645-A2
+COPY *.html ./
+COPY *.css ./
+COPY *.JPG ./
+COPY *.pdf ./
 
 RUN jar -cvf swe645_a2.war *
 
