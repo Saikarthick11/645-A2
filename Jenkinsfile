@@ -8,19 +8,25 @@ pipeline {
         IMAGE_TAG = '0.5'
         // Replace with your actual GitHub Repo URL
         GIT_REPO_URL = 'https://github.com/Saikarthick11/645-A2.git'
+        // Updated to handle both 'main' and 'master' branch naming
+        BRANCH_NAME = 'main' 
     }
 
     stages {
         stage('Checkout') {
             steps {
-                echo 'Pulling source code from GitHub...'
-                git "${GIT_REPO_URL}"
+                echo "Pulling source code from ${GIT_REPO_URL} (branch: ${BRANCH_NAME})..."
+                // Using explicit syntax to prevent the 'ref not found' status code 128 error
+                git url: "${GIT_REPO_URL}", branch: "${BRANCH_NAME}"
             }
         }
 
         stage('Build Docker Image') {
             steps {
                 script {
+                    echo 'Verifying workspace contents before build...'
+                    sh "ls -la"
+                    
                     echo 'Building Docker image for AMD64 architecture...'
                     // Added --platform to fix the architecture mismatch issue
                     dockerImage = docker.build("${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}", "--platform linux/amd64 .")
@@ -33,7 +39,7 @@ pipeline {
                 script {
                     echo 'Authenticating and pushing to Docker Hub...'
                     // Ensure you have created 'docker-hub-creds' in Jenkins Credentials
-                    docker.withRegistry('[https://index.docker.io/v1/](https://index.docker.io/v1/)', 'docker-hub-creds') {
+                    docker.withRegistry('https://index.docker.io/v1/', 'docker-hub-creds') {
                         dockerImage.push()
                     }
                 }
