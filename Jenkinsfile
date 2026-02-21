@@ -75,12 +75,12 @@ pipeline {
                     # Update the image placeholder in the manifest if necessary
                     # We use '|| true' to prevent script failure if the file doesn't exist yet
                     if [ -f k8s/deployment.yaml ]; then
-                        sed -i 's|<YOUR_DOCKERHUB_USER>/simple-webapp:latest|${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}|g' k8s/deployment.yaml
-                        kubectl apply -f k8s/deployment.yaml
+                        sed -i 's|<YOUR_DOCKERHUB_USER>/simple-webapp:latest|${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}|g' deployment.yaml
+                        kubectl apply -f deployment.yaml
                     fi
                     
                     if [ -f k8s/service.yaml ]; then
-                        kubectl apply -f k8s/service.yaml
+                        kubectl apply -f service.yaml
                     fi
                     """
                 }
