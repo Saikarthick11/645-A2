@@ -1,0 +1,53 @@
+SWE645 Assignment 1 - Submission Guide
+
+Author: Saikarthick C
+Gnumber:G01572026
+
+1. Deployment URLs
+
+AWS S3 URL: http://swe-645-saikarthick-portfolio.s3-website.us-east-2.amazonaws.com
+
+AWS EC2 URL: http://3.148.195.189/
+
+2. Configuration Steps
+
+- Amazon S3 Deployment
+
+Bucket Creation: Log in to S3 and create a bucket (e.g., swe645-saikarthick-portfolio). Uncheck "Block all public access".
+
+Permissions: Apply a Bucket Policy to allow public read access (s3:GetObject).
+
+Upload Files: Upload index.html, survey.html, error.html, and photo.webp.
+
+Static Hosting: Enable "Static website hosting" in the bucket properties. Set index.html as the index document and error.html as the error document.
+
+- Amazon EC2 Deployment
+
+Launch Instance: Launched a t3.micro instance with Ubuntu AMI. Ensure Port 80 (HTTP) is open in the security group.
+
+Install Apache: Connect via SSH and run:
+
+sudo apt update
+sudo apt install -y apache2
+sudo systemctl start apache2
+
+
+Deploy Source: - Change permissions: sudo chown -R ubuntu:ubuntu /var/www/html
+
+Use nano /var/www/html/index.html to create and paste the portfolio code.
+
+Repeat for survey.html and error.html.
+
+Error Page Config: - Edit /etc/apache2/apache2.conf to change AllowOverride None to AllowOverride All for /var/www/html.
+
+Add ErrorDocument 404 /error.html at the bottom and restart Apache.
+
+3. File Manifest
+
+index.html: Homepage with bio and project links.
+
+survey.html: Form for collecting prospective student feedback.
+
+error.html: Custom 404 page.
+
+readme.md: Deployment guide and URLs.
