@@ -5,7 +5,7 @@ pipeline {
         // Replace with your actual Docker Hub username
         DOCKERHUB_USER = 'saik11' 
         IMAGE_NAME = 'studentsurvey645'
-        IMAGE_TAG = '0.5'
+        IMAGE_TAG = "${env.BUILD_ID}"
         // Replace with your actual GitHub Repo URL
         GIT_REPO_URL = 'https://github.com/Saikarthick11/645-A2.git'
         // Try changing this to 'master' if the build fails again with 'main'
