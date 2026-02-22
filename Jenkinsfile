@@ -2,22 +2,15 @@ pipeline {
     agent any
 
     environment {
-        // Your Docker Hub username
+ 
         DOCKERHUB_USER = 'saik11' 
         IMAGE_NAME = 'studentsurvey645'
-        
-        /* IMAGE LOGIC: Using build ID ensures a unique tag for every run. */
         IMAGE_TAG = "${env.BUILD_ID}"
-        
         GIT_REPO_URL = 'https://github.com/Saikarthick11/645-A2.git'
         BRANCH_NAME = 'sai' 
-        
-        // Reference to the Credentials IDs stored in Jenkins
         DOCKER_CREDS_ID = 'docker-hub-creds'
-        // This is the ID of the 'Secret File' credential you created in Jenkins
         KUBECONFIG_ID = 'kubeconfig-id'
     }
-
     stages {
         stage('Checkout') {
             steps {
@@ -36,11 +29,8 @@ pipeline {
                 script {
                     echo "Building version: ${IMAGE_TAG}"
                     
-                    // Build directly from the source (Dockerfile handles packaging)
                     sh "docker build --platform linux/amd64 -t ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG} ."
-                    
-                    // Secure Login and Push using Jenkins Docker DSL
-                    docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDS_ID}") {
+                                docker.withRegistry('https://index.docker.io/v1/', "${DOCKER_CREDS_ID}") {
                         sh "docker push ${DOCKERHUB_USER}/${IMAGE_NAME}:${IMAGE_TAG}"
                     }
                 }
