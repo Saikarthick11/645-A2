@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  # This name matches your Rancher screenshot
   name: swe-645-a2-cluster
   labels:
     app: studentsurvey
@@ -17,7 +16,6 @@ spec:
     spec:
       containers:
       - name: container-0
-        # The Jenkinsfile will automatically update this tag
         image: saik11/studentsurvey645:latest
         ports:
         - containerPort: 8080
